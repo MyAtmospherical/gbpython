@@ -1,0 +1,126 @@
+import os
+import json
+import datetime
+
+NOTES_FILE = "notes.json"
+
+class Note:
+    def __init__(self, note_id, title, body, created_at, modified_at):
+        self.note_id = note_id
+        self.title = title
+        self.body = body
+        self.created_at = created_at
+        self.modified_at = modified_at
+
+class NoteManager:
+    def __init__(self):
+        self.notes = []
+        self.load_notes()
+
+    def load_notes(self):
+        if os.path.exists(NOTES_FILE):
+            with open(NOTES_FILE, 'r') as file:
+                self.notes = json.load(file, object_hook=self.json_to_note)
+
+    def save_notes(self):
+        with open(NOTES_FILE, 'w') as file:
+            json.dump(self.notes, file, default=self.note_to_json, indent=4)
+
+    def json_to_note(self, json_obj):
+        return Note(
+            json_obj["note_id"],
+            json_obj["title"],
+            json_obj["body"],
+            json_obj["created_at"],
+            json_obj["modified_at"]
+        )
+
+    def note_to_json(self, note):
+        return {
+            "note_id": note.note_id,
+            "title": note.title,
+            "body": note.body,
+            "created_at": note.created_at,
+            "modified_at": note.modified_at
+        }
+
+    def create_note(self, title, body):
+        note_id = len(self.notes) + 1
+        now = datetime.datetime.now().isoformat()
+        new_note = Note(note_id, title, body, now, now)
+        self.notes.append(new_note)
+        self.save_notes()
+        print("Note created.")
+
+    def read_notes(self):
+        if not self.notes:
+            print("No notes found.")
+        else:
+            for note in self.notes:
+                print(f"ID: {note.note_id}")
+                print(f"Title: {note.title}")
+                print(f"Body: {note.body}")
+                print(f"Created at: {note.created_at}")
+                print(f"Last modified: {note.modified_at}\n")
+                print("-" * 20)
+
+    def edit_note(self, note_id, new_title, new_body):
+        note = self.find_note_by_id(note_id)
+        if note:
+            note.title = new_title
+            note.body = new_body
+            note.modified_at = datetime.datetime.now().isoformat()
+            self.save_notes()
+            print("Note edited.")
+        else:
+            print("Note not found.")
+
+    def delete_note(self, note_id):
+        note = self.find_note_by_id(note_id)
+        if note:
+            self.notes.remove(note)
+            self.save_notes()
+            print("Note deleted.")
+        else:
+            print("Note not found.")
+
+    def find_note_by_id(self, note_id):
+        for note in self.notes:
+            if note.note_id == note_id:
+                return note
+        return None
+
+def main():
+    note_manager = NoteManager()
+
+    while True:
+        print("\nMenu:")
+        print("1. Create a note")
+        print("2. Read notes")
+        print("3. Edit a note")
+        print("4. Delete a note")
+        print("5. Exit")
+
+        choice = input("Select an option: ")
+
+        if choice == '1':
+            title = input("Enter note title: ")
+            body = input("Enter note body: ")
+            note_manager.create_note(title, body)
+        elif choice == '2':
+            note_manager.read_notes()
+        elif choice == '3':
+            note_id = int(input("Enter note ID to edit: "))
+            new_title = input("Enter new title: ")
+            new_body = input("Enter new body: ")
+            note_manager.edit_note(note_id, new_title, new_body)
+        elif choice == '4':
+            note_id = int(input("Enter note ID to delete: "))
+            note_manager.delete_note(note_id)
+        elif choice == '5':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
