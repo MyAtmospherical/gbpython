@@ -1,0 +1,64 @@
+class Notebook:
+    def __init__(self, model, ram, storage, os, color):
+        self.model = model
+        self.ram = ram
+        self.storage = storage
+        self.os = os
+        self.color = color
+
+    def __str__(self):
+        return f"{self.model} - RAM: {self.ram}GB, Storage: {self.storage}GB, OS: {self.os}, Color: {self.color}"
+
+class TechStore:
+    def __init__(self):
+        self.notebooks = set()
+
+    def add_notebook(self, notebook):
+        self.notebooks.add(notebook)
+
+    def filter_notebooks(self, criteria):
+        filtered_notebooks = set()
+
+        for notebook in self.notebooks:
+            passes_filter = True
+            for key, value in criteria.items():
+                if key == 'ram' and notebook.ram < value:
+                    passes_filter = False
+                elif key == 'storage' and notebook.storage < value:
+                    passes_filter = False
+                elif key == 'os' and notebook.os != value:
+                    passes_filter = False
+                elif key == 'color' and notebook.color != value:
+                    passes_filter = False
+
+            if passes_filter:
+                filtered_notebooks.add(notebook)
+
+        return filtered_notebooks
+
+def main():
+    store = TechStore()
+
+    #добавление ноутбуков в магазин
+    store.add_notebook(Notebook("Laptop1", 8, 512, "Windows", "Silver"))
+    store.add_notebook(Notebook("Laptop2", 16, 1024, "MacOS", "Space Gray"))
+    store.add_notebook(Notebook("Laptop3", 8, 256, "Linux", "Black"))
+    store.add_notebook(Notebook("Laptop4", 16, 512, "Windows", "Silver"))
+
+    #фильтрация по критериям
+    filter_criteria = {
+        'ram': 16,
+        'storage': 512,
+        'os': 'Windows',
+        'color': 'Silver'
+    }
+
+    filtered_notebooks = store.filter_notebooks(filter_criteria)
+
+    #вывод отфильтрованных ноутбуков
+    print("Filtered Notebooks:")
+    for notebook in filtered_notebooks:
+        print(notebook)
+
+if __name__ == "__main__":
+    main()
